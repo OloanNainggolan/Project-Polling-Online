@@ -10,11 +10,25 @@ class PollSeeder extends Seeder
 {
     public function run(): void
     {
-        // Buat polling pertama
-        $poll = Poll::create(['question' => 'Siapa Presiden Favoritmu?']);
+        // Hapus data lama jika ada (dengan foreign key check off)
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        \App\Models\Vote::truncate();
+        Option::truncate();
+        Poll::truncate();
+        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        
+        // Buat polling pemilihan ketua OSIS
+        $poll = Poll::create([
+            'question' => 'Pemilihan Ketua OSIS 2024'
+        ]);
 
-        // Tambah opsi
-        $options = ['Jokowi', 'Prabowo', 'Ganjar', 'Anies'];
+        // Tambah pasangan calon ketua OSIS
+        $options = [
+            'Pasangan Nomor 1: Ahmad & Siti',
+            'Pasangan Nomor 2: Budi & Dewi',
+            'Pasangan Nomor 3: Candra & Fitri'
+        ];
+        
         foreach ($options as $opt) {
             Option::create([
                 'poll_id' => $poll->id,

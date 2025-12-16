@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Online - Sistem Polling</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 420px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 48px 36px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .logo {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+        
+        .subtitle {
+            font-size: 15px;
+            color: #6b7280;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+        
+        .features {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .feature-icon {
+            font-size: 18px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+        
+        .footer {
+            margin-top: 24px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 36px 28px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🗳️</div>
+        
+        <h1>Voting Online</h1>
+        <p class="subtitle">
+            Sistem polling yang aman. Login untuk mulai voting, setiap user hanya dapat vote satu kali.
+        </p>
+        
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">🔐</span>
+                <span>Login & Autentikasi</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">✅</span>
+                <span>One vote per user</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">📊</span>
+                <span>Real-time results</span>
+            </div>
+        </div>
+        
+        @auth
+            <a href="{{ route('poll') }}" class="btn btn-primary" style="width: 100%;">
+                Mulai Voting
+            </a>
+        @else
+            <div class="button-group">
+                <a href="{{ route('login') }}" class="btn btn-secondary">
+                    Login
+                </a>
+                <a href="{{ route('register') }}" class="btn btn-primary">
+                    Register
+                </a>
+            </div>
+        @endauth
+        
+        <div class="footer">
+            © 2025 Voting Online
+        </div>
+    </div>
+</body>
+</html>

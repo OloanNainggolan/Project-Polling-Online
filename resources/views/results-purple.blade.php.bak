@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Voting - {{ $poll->question }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            top: -350px;
+            left: -350px;
+            animation: float 30s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-60px) rotate(180deg); }
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+            padding: 48px;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 10;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 36px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: #f8fafc;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .back-btn:hover {
+            background: #f1f5f9;
+            transform: translateX(-4px);
+        }
+        
+        .user-logout {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+        }
+        
+        .logout-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .icon {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            margin-bottom: 24px;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.35);
+            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        h1 {
+            color: #1e293b;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        
+        h2 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.95;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .chart-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+        
+        .chart-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .chart-header h3 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .chart-header p {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+        }
+        
+        .details-section h3 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .option-result {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 14px;
+            transition: all 0.3s;
+        }
+        
+        .option-result:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+            border-color: #c7d2fe;
+        }
+        
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .option-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .option-votes {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .vote-count {
+            font-size: 18px;
+            font-weight: 800;
+            color: #667eea;
+        }
+        
+        .vote-percentage {
+            font-size: 16px;
+            font-weight: 700;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .progress-bar {
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+        
+        .ranking {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #fbbf24;
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 32px;
+        }
+        
+        .ranking h3 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #92400e;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .rank-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: white;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .rank-item:hover {
+            transform: translateX(8px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+        
+        .rank-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        
+        .rank-item:first-child .rank-number {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        }
+        
+        .rank-info {
+            flex: 1;
+        }
+        
+        .rank-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .rank-stats {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 32px 24px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-nav {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+            
+            .user-logout {
+                justify-content: space-between;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-nav">
+            <a href="{{ route('poll') }}" class="back-btn">
+                ← Kembali ke Polling
+            </a>
+            <div class="user-logout">
+                <span class="user-name">{{ Auth::user()->name }}</span>
+                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="header">
+            <div class="icon">📊</div>
+            <h1>Hasil Voting Real-Time</h1>
+            <h2>{{ $poll->question }}</h2>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ $poll->options->sum('votes') }}</div>
+                <div class="stat-label">Total Suara</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ $poll->options->count() }}</div>
+                <div class="stat-label">Pilihan</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ $poll->options->max('votes') }}</div>
+                <div class="stat-label">Vote Tertinggi</div>
+            </div>
+        </div>
+        
+        <div class="chart-section">
+            <div class="chart-header">
+                <h3>📈 Visualisasi Data</h3>
+                <p>Grafik distribusi suara secara interaktif</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="resultsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="details-section">
+            <h3>
+                📋 Detail Hasil
+            </h3>
+            
+            @foreach($poll->options as $option)
+                @php
+                    $totalVotes = $poll->options->sum('votes');
+                    $percentage = $totalVotes > 0 ? round(($option->votes / $totalVotes) * 100, 1) : 0;
+                @endphp
+                <div class="option-result">
+                    <div class="option-header">
+                        <div class="option-name">{{ $option->option_text }}</div>
+                        <div class="option-votes">
+                            <span class="vote-count">{{ $option->votes }} suara</span>
+                            <span class="vote-percentage">{{ $percentage }}%</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ $percentage }}%"></div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        
+        <div class="ranking">
+            <h3>
+                🏆 Peringkat Teratas
+            </h3>
+            
+            @foreach($poll->options->sortByDesc('votes')->take(3) as $index => $option)
+                @php
+                    $totalVotes = $poll->options->sum('votes');
+                    $percentage = $totalVotes > 0 ? round(($option->votes / $totalVotes) * 100, 1) : 0;
+                @endphp
+                <div class="rank-item">
+                    <div class="rank-number">{{ $index + 1 }}</div>
+                    <div class="rank-info">
+                        <div class="rank-name">{{ $option->option_text }}</div>
+                        <div class="rank-stats">{{ $option->votes }} suara ({{ $percentage }}%)</div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    
+    <script>
+        const ctx = document.getElementById('resultsChart').getContext('2d');
+        const chartData = @json($chartData);
+        
+        const gradient1 = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient1.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
+        gradient1.addColorStop(1, 'rgba(118, 75, 162, 0.8)');
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Jumlah Suara',
+                    data: chartData.data,
+                    backgroundColor: gradient1,
+                    borderColor: '#667eea',
+                    borderWidth: 2,
+                    borderRadius: 12,
+                    barPercentage: 0.7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        borderColor: '#667eea',
+                        borderWidth: 1,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((context.parsed.y / total) * 100).toFixed(1) : 0;
+                                return context.parsed.y + ' suara (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Animate progress bars on load
+        window.addEventListener('load', function() {
+            const progressFills = document.querySelectorAll('.progress-fill');
+            progressFills.forEach(fill => {
+                const width = fill.style.width;
+                fill.style.width = '0%';
+                setTimeout(() => {
+                    fill.style.width = width;
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

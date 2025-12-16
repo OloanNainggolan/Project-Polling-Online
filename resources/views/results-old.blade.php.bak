@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Polling</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        
+        .container { 
+            max-width: 720px;
+            margin: 0 auto;
+            background: white;
+            padding: 35px 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 20px rgba(0,0,0,0.08);
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+        
+        h1 { 
+            color: #1f2937;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        h2 {
+            color: #6366f1;
+            font-size: 17px;
+            font-weight: 600;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 18px 16px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+        
+        .chart-container {
+            margin-bottom: 32px;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            color: #1f2937;
+            margin-bottom: 18px;
+            font-weight: 700;
+        }
+        
+        .bar-chart {
+            background: #f9fafb;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .bar-item {
+            margin-bottom: 18px;
+            padding: 16px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        
+        .bar-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .bar-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .bar-item.your-vote {
+            background: #fffbeb;
+            border-color: #fbbf24;
+        }
+        
+        .bar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+        
+        .bar-label {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bar-value {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        .bar-votes {
+            background: #6366f1;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .bar-percentage {
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 45px;
+            text-align: right;
+        }
+        
+        .bar-background {
+            background: #e5e7eb;
+            height: 32px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 8px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            min-width: 32px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            flex: 1;
+            min-width: 160px;
+            padding: 13px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-secondary {
+            background: white;
+            border: 2px solid #e5e7eb;
+            color: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #f9fafb;
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 28px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th {
+            background: #f9fafb;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover {
+            background: #f9fafb;
+        }
+        
+        .rank {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: #6366f1;
+            color: white;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            background: #d1fae5;
+            color: #065f46;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 3px solid #10b981;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .your-vote-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #f59e0b;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .bar-item.your-vote {
+            background: #fffbeb;
+            border-color: #fbbf24;
+        }
+        
+        tr.your-vote {
+            background: #fffbeb !important;
+        }
+        
+        tr.your-vote:hover {
+            background: #fef3c7 !important;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #9ca3af;
+            font-size: 12px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    @if(session('success'))
+        <div class="alert">✓ {{ session('success') }}</div>
+    @endif
+    
+    <!-- Header dengan Back & Logout -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb;">
+        <a href="{{ route('poll') }}" style="display: inline-flex; align-items: center; gap: 6px; color: #6366f1; text-decoration: none; font-size: 13px; font-weight: 600;">
+            ← Kembali
+        </a>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 13px; color: #6b7280;">{{ Auth::user()->name }}</span>
+            <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                @csrf
+                <button type="submit" style="background: #ef4444; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="header">
+        <div class="icon">📊</div>
+        <h1>Hasil Polling</h1>
+        <h2>{{ $poll->question }}</h2>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ $totalVotes }}</div>
+            <div class="stat-label">Total Suara</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ $poll->options->count() }}</div>
+            <div class="stat-label">Opsi Pilihan</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ $winner->option_text ?? '-' }}</div>
+            <div class="stat-label">Paling Banyak</div>
+        </div>
+    </div>
+
+    <!-- Chart Interaktif dengan Chart.js -->
+    <div class="chart-container">
+        <div class="chart-title">📊 Visualisasi Hasil Voting</div>
+        <div style="background: white; padding: 30px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <canvas id="votingChart" style="max-height: 400px;"></canvas>
+        </div>
+    </div>
+    
+    <!-- Bar Chart Manual (Backup) -->
+    <div class="chart-container">
+        <div class="chart-title">📈 Detail Hasil Per Opsi</div>
+        <div class="bar-chart">
+            @foreach($poll->options->sortByDesc('votes') as $option)
+                <div class="bar-item {{ $option->id == $votedOptionId ? 'your-vote' : '' }}">
+                    <div class="bar-header">
+                        <span class="bar-label">
+                            {{ $option->option_text }}
+                            @if($option->id == $votedOptionId)
+                                <span class="your-vote-badge">✓ Pilihan Anda</span>
+                            @endif
+                        </span>
+                        <div class="bar-value">
+                            <span class="bar-votes">{{ $option->votes }} suara</span>
+                            <span class="bar-percentage">{{ $totalVotes > 0 ? number_format(($option->votes / $totalVotes) * 100, 1) : 0 }}%</span>
+                        </div>
+                    </div>
+                    <div class="bar-background">
+                        <div class="bar-fill" style="width: {{ $totalVotes > 0 ? ($option->votes / $totalVotes) * 100 : 0 }}%">
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Peringkat</th>
+                    <th>Kandidat</th>
+                    <th>Jumlah Suara</th>
+                    <th>Persentase</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($poll->options->sortByDesc('votes')->values() as $index => $option)
+                    <tr class="{{ $option->id == $votedOptionId ? 'your-vote' : '' }}">
+                        <td><span class="rank">{{ $index + 1 }}</span></td>
+                        <td>
+                            {{ $option->option_text }}
+                            @if($option->id == $votedOptionId)
+                                <span class="your-vote-badge">✓ Pilihan Anda</span>
+                            @endif
+                        </td>
+                        <td>{{ $option->votes }}</td>
+                        <td>{{ $totalVotes > 0 ? number_format(($option->votes / $totalVotes) * 100, 1) : 0 }}%</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <div class="buttons">
+        <a href="{{ route('poll') }}" class="btn btn-primary">← Kembali</a>
+        <form action="{{ route('reset') }}" method="POST" style="flex: 1; min-width: 160px;" onsubmit="return confirm('Yakin ingin reset semua suara?')">
+            @csrf
+            <button type="submit" class="btn btn-secondary" style="width: 100%;">Reset Polling</button>
+        </form>
+    </div>
+    
+    <div class="footer">
+        © 2025 Polling Online - Real-time Results with Authentication
+    </div>
+</div>
+
+<script>
+    // Data dari backend
+    const chartData = @json($chartData);
+    
+    // Warna gradient untuk setiap bar
+    const gradientColors = [
+        { start: '#667eea', end: '#764ba2' },
+        { start: '#f093fb', end: '#f5576c' },
+        { start: '#4facfe', end: '#00f2fe' },
+        { start: '#43e97b', end: '#38f9d7' },
+        { start: '#fa709a', end: '#fee140' },
+        { start: '#30cfd0', end: '#330867' }
+    ];
+    
+    // Setup Chart
+    const ctx = document.getElementById('votingChart').getContext('2d');
+    
+    // Create gradients
+    const backgroundColors = chartData.labels.map((label, index) => {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        const color = gradientColors[index % gradientColors.length];
+        gradient.addColorStop(0, color.start);
+        gradient.addColorStop(1, color.end);
+        return gradient;
+    });
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Jumlah Suara',
+                data: chartData.votes,
+                backgroundColor: backgroundColors,
+                borderRadius: 10,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Hasil Voting Real-time',
+                    font: {
+                        size: 18,
+                        weight: 'bold'
+                    },
+                    padding: {
+                        bottom: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const votes = context.parsed.y;
+                            const percentage = chartData.percentages[context.dataIndex];
+                            return [
+                                `Suara: ${votes}`,
+                                `Persentase: ${percentage}%`
+                            ];
+                        }
+                    },
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 12,
+                            weight: 500
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+</script>
+</body>
+</html>

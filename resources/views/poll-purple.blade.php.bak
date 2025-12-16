@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ $poll->question }} - Voting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            top: -300px;
+            right: -300px;
+            animation: float 25s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-50px) rotate(180deg); }
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+            padding: 48px;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 10;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 36px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: #f8fafc;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .back-btn:hover {
+            background: #f1f5f9;
+            transform: translateX(-4px);
+        }
+        
+        .user-logout {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+        }
+        
+        .logout-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 24px;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.35);
+            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        h2 {
+            color: #1e293b;
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        
+        .subtitle {
+            color: #64748b;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        form {
+            margin-bottom: 32px;
+        }
+        
+        .option-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 20px 24px;
+            margin-bottom: 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .option-card:hover {
+            border-color: #c7d2fe;
+            transform: translateX(8px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        }
+        
+        .option-card:hover::before {
+            width: 100%;
+        }
+        
+        .option-card input[type="radio"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #667eea;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .option-card label {
+            flex: 1;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            color: #334155;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .option-card:has(input:checked) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .option-card:has(input:checked) label {
+            color: white;
+            font-weight: 700;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .already-voted {
+            text-align: center;
+            padding: 32px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 20px;
+            border: 2px solid #fbbf24;
+            margin-bottom: 24px;
+        }
+        
+        .already-voted-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            animation: tada 1s ease-in-out;
+        }
+        
+        @keyframes tada {
+            0% { transform: scale(1) rotate(0deg); }
+            10%, 20% { transform: scale(0.9) rotate(-3deg); }
+            30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
+            40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        
+        .already-voted h3 {
+            color: #92400e;
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .already-voted p {
+            color: #78350f;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .results-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+        
+        .results-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 32px 24px;
+            }
+            
+            h2 {
+                font-size: 24px;
+            }
+            
+            .header-nav {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+            
+            .user-logout {
+                justify-content: space-between;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-nav">
+            <a href="{{ route('welcome') }}" class="back-btn">
+                ← Kembali
+            </a>
+            <div class="user-logout">
+                <span class="user-name">{{ Auth::user()->name }}</span>
+                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="header">
+            <div class="icon">🗳️</div>
+            <h2>{{ $poll->question }}</h2>
+            <p class="subtitle">Pilih salah satu opsi di bawah ini</p>
+        </div>
+        
+        @if($hasVoted)
+            <div class="already-voted">
+                <div class="already-voted-icon">✅</div>
+                <h3>Terima Kasih!</h3>
+                <p>Anda sudah memberikan suara untuk polling ini</p>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{ route('results') }}" class="results-link">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    Lihat Hasil Voting
+                </a>
+            </div>
+        @else
+            <form method="POST" action="{{ route('vote') }}">
+                @csrf
+                @foreach($poll->options as $option)
+                    <div class="option-card">
+                        <input type="radio" name="option_id" value="{{ $option->id }}" id="option{{ $option->id }}" required>
+                        <label for="option{{ $option->id }}">
+                            {{ $option->option_text }}
+                        </label>
+                    </div>
+                @endforeach
+                
+                <button type="submit" class="submit-btn">
+                    🗳️ Kirim Vote Saya
+                </button>
+            </form>
+        @endif
+    </div>
+</body>
+</html>
