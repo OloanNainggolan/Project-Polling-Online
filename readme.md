@@ -59,3 +59,9 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+Pembagian tugas :
+1. Theresia : Membuat tampilan halaman polling (frontend).
+2. Prisca : Membuat tampilan hasil voting (barchart) dan fitur reset hasil voting.
+3. Chrismansyah: Menangani penyimpanan data voting serta validasi user (sessionStorage & localStorage).
+4. Oloan: Mengembangkan logika backend dan controller Laravel.
